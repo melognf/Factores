@@ -105,13 +105,35 @@ const jarabeInput = $("jarabe");
 const formatoInput = $("formato");
 const factorInput = $("factor");
 const btnCalcular = $("btnCalcular");
-const resultado = $("resultado");
-
 const btnLimpiar = $("btnLimpiar");
+const resultado = $("resultado");
 const fxBurst = $("fxBurst");
 
 function resetResultadoVisual() {
   resultado.innerHTML = `<div class="resultado-vacio">Completá los datos para calcular.</div>`;
+}
+
+function formatearNumero(valor, decimales = 2) {
+  return Number(valor).toLocaleString("es-AR", {
+    minimumFractionDigits: decimales,
+    maximumFractionDigits: decimales
+  });
+}
+
+function normalizarDecimal(texto) {
+  return String(texto || "")
+    .trim()
+    .replace(/\s+/g, "")
+    .replace(",", ".");
+}
+
+function parseDecimalExacto(texto) {
+  const limpio = normalizarDecimal(texto);
+
+  if (limpio === "") return NaN;
+  if (!/^\d*\.?\d+$/.test(limpio)) return NaN;
+
+  return Number(limpio);
 }
 
 function crearExplosionVisual(origenEl) {
@@ -120,7 +142,6 @@ function crearExplosionVisual(origenEl) {
   const rect = origenEl.getBoundingClientRect();
   const cx = rect.left + rect.width / 2;
   const cy = rect.top + rect.height / 2;
-
   const total = 18;
 
   for (let i = 0; i < total; i++) {
@@ -132,7 +153,6 @@ function crearExplosionVisual(origenEl) {
 
     const angle = (Math.PI * 2 * i) / total;
     const distance = 40 + Math.random() * 90;
-
     const tx = Math.cos(angle) * distance + "px";
     const ty = Math.sin(angle) * distance + "px";
 
@@ -142,7 +162,6 @@ function crearExplosionVisual(origenEl) {
     p.style.setProperty("--ty", ty);
 
     fxBurst.appendChild(p);
-
     setTimeout(() => p.remove(), 750);
   }
 }
@@ -163,7 +182,7 @@ function limpiarCalculo() {
   crearExplosionVisual(btnLimpiar);
 
   setTimeout(() => {
-    bebidaSelect.selectedIndex = 0;
+    bebidaSelect.value = "";
     jarabeInput.value = "";
     formatoInput.value = "";
     factorInput.value = "";
@@ -181,29 +200,22 @@ function limpiarCalculo() {
 }
 
 function cargarBebidas() {
-  bebidaSelect.innerHTML = "";
-
   bebidas.forEach((b, i) => {
     const option = document.createElement("option");
     option.value = i;
     option.textContent = b.nombre;
     bebidaSelect.appendChild(option);
   });
-
-  actualizarFactor();
 }
 
 function actualizarFactor() {
-  const idx = Number(bebidaSelect.value || 0);
-  const bebida = bebidas[idx];
-  factorInput.value = bebida ? bebida.factor.toFixed(6) : "";
-}
+  if (bebidaSelect.value === "") {
+    factorInput.value = "";
+    return;
+  }
 
-function formatearNumero(valor, decimales = 2) {
-  return Number(valor).toLocaleString("es-AR", {
-    minimumFractionDigits: decimales,
-    maximumFractionDigits: decimales
-  });
+  const bebida = bebidas[Number(bebidaSelect.value)];
+  factorInput.value = bebida ? bebida.factor.toFixed(6) : "";
 }
 
 function calcular() {
@@ -216,11 +228,11 @@ function calcular() {
 
   const bebida = bebidas[Number(idx)];
 
-  const jarabeTexto = String(jarabeInput.value).trim();
-  const formatoTexto = String(formatoInput.value).trim();
+  const jarabeTexto = jarabeInput.value;
+  const formatoTexto = formatoInput.value;
 
-  const litrosJarabe = Number(jarabeTexto.replace(",", "."));
-  const formatoLitros = Number(formatoTexto.replace(",", "."));
+  const litrosJarabe = parseDecimalExacto(jarabeTexto);
+  const formatoLitros = parseDecimalExacto(formatoTexto);
 
   if (!Number.isFinite(litrosJarabe) || litrosJarabe <= 0) {
     resultado.innerHTML = `<div class="resultado-vacio">Ingresá una cantidad válida de litros de jarabe.</div>`;
@@ -235,7 +247,8 @@ function calcular() {
   const litrosBebida = litrosJarabe * bebida.factor;
   const cantidadEnvases = litrosBebida / formatoLitros;
 
-  const formatoMostrado = formatoTexto.replace(".", ",");
+  const jarabeMostrado = normalizarDecimal(jarabeTexto).replace(".", ",");
+  const formatoMostrado = normalizarDecimal(formatoTexto).replace(".", ",");
 
   resultado.innerHTML = `
     <div class="bloque">
@@ -246,20 +259,16 @@ function calcular() {
 
       <div class="kpi">
         <div class="titulo">Cantidad teórica de envases</div>
-        <div class="valor">${formatearNumero(cantidadEnvases, 0)}</div>
+        <div class="valor">${formatearNumero(cantidadEnvases, 2)}</div>
       </div>
 
       <div class="detalle">
         <strong>Cálculo aplicado:</strong><br>
-        ${formatearNumero(litrosJarabe, 2)} × ${formatearNumero(bebida.factor, 6)} ÷ ${formatoMostrado}
+        ${jarabeMostrado} × ${formatearNumero(bebida.factor, 6)} ÷ ${formatoMostrado}
       </div>
     </div>
   `;
 }
-bebidaSelect.addEventListener("change", actualizarFactor);
-btnCalcular.addEventListener("click", calcular);
-btnLimpiar.addEventListener("click", limpiarCalculo);
-
 
 function iniciarAnimacionLiquida() {
   if (typeof gsap === "undefined") return;
@@ -300,5 +309,10 @@ function iniciarAnimacionLiquida() {
   });
 }
 
+bebidaSelect.addEventListener("change", actualizarFactor);
+btnCalcular.addEventListener("click", calcular);
+btnLimpiar.addEventListener("click", limpiarCalculo);
+
 cargarBebidas();
+actualizarFactor();
 iniciarAnimacionLiquida();
