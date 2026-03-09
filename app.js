@@ -207,29 +207,35 @@ function formatearNumero(valor, decimales = 2) {
 }
 
 function calcular() {
-  const idx = Number(bebidaSelect.value);
-  const bebida = bebidas[idx];
+  const idx = bebidaSelect.value;
 
-  const litrosJarabe = Number(String(jarabeInput.value).replace(",", "."));
-  const formatoLitros = Number(String(formatoInput.value).replace(",", "."));
-
-  if (!bebida) {
+  if (idx === "") {
     resultado.innerHTML = `<div class="resultado-vacio">Seleccioná una bebida.</div>`;
     return;
   }
 
-  if (!litrosJarabe || litrosJarabe <= 0) {
+  const bebida = bebidas[Number(idx)];
+
+  const jarabeTexto = String(jarabeInput.value).trim();
+  const formatoTexto = String(formatoInput.value).trim();
+
+  const litrosJarabe = Number(jarabeTexto.replace(",", "."));
+  const formatoLitros = Number(formatoTexto.replace(",", "."));
+
+  if (!Number.isFinite(litrosJarabe) || litrosJarabe <= 0) {
     resultado.innerHTML = `<div class="resultado-vacio">Ingresá una cantidad válida de litros de jarabe.</div>`;
     return;
   }
 
-  if (!formatoLitros || formatoLitros <= 0) {
+  if (!Number.isFinite(formatoLitros) || formatoLitros <= 0) {
     resultado.innerHTML = `<div class="resultado-vacio">Ingresá un formato válido en litros.</div>`;
     return;
   }
 
   const litrosBebida = litrosJarabe * bebida.factor;
   const cantidadEnvases = litrosBebida / formatoLitros;
+
+  const formatoMostrado = formatoTexto.replace(".", ",");
 
   resultado.innerHTML = `
     <div class="bloque">
@@ -245,12 +251,11 @@ function calcular() {
 
       <div class="detalle">
         <strong>Cálculo aplicado:</strong><br>
-        ${formatearNumero(litrosJarabe, 2)} × ${formatearNumero(bebida.factor, 6)} ÷ ${formatearNumero(formatoLitros, 2)}
+        ${formatearNumero(litrosJarabe, 2)} × ${formatearNumero(bebida.factor, 6)} ÷ ${formatoMostrado}
       </div>
     </div>
   `;
 }
-
 bebidaSelect.addEventListener("change", actualizarFactor);
 btnCalcular.addEventListener("click", calcular);
 btnLimpiar.addEventListener("click", limpiarCalculo);
