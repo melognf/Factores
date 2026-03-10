@@ -22,20 +22,31 @@
       <div class="liquid-bg">
         <svg class="liquid-svg" viewBox="0 0 1440 320" preserveAspectRatio="none">
           <path id="wave1" d="M0,160L48,149.3C96,139,192,117,288,122.7C384,128,480,160,576,176C672,192,768,192,864,170.7C960,149,1056,107,1152,101.3C1248,96,1344,128,1392,144L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-
           <path id="wave2" d="M0,224L48,213.3C96,203,192,181,288,165.3C384,149,480,139,576,149.3C672,160,768,192,864,202.7C960,213,1056,203,1152,186.7C1248,171,1344,149,1392,138.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-
           <path id="wave3" d="M0,256L48,245.3C96,235,192,213,288,208C384,203,480,213,576,224C672,235,768,245,864,234.7C960,224,1056,192,1152,186.7C1248,181,1344,203,1392,213.3L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
         </svg>
       </div>
 
       <div class="topbar-content">
         <h1>Cálculo de Bebida</h1>
-        <p>Jarabe · Factor · Formato</p>
+        <p>Jarabe · Factor · Formato · Tiempo</p>
       </div>
     </header>
 
     <main class="card">
+      <div class="campo">
+        <label for="linea">Línea</label>
+        <select id="linea">
+          <option value="" selected disabled>Seleccionar línea</option>
+          <option value="LINEA 1">LÍNEA 1</option>
+          <option value="LINEA 2">LÍNEA 2</option>
+          <option value="LINEA 3">LÍNEA 3</option>
+          <option value="LINEA 5">LÍNEA 5</option>
+          <option value="LINEA 6">LÍNEA 6</option>
+          <option value="LINEA 7">LÍNEA 7</option>
+        </select>
+      </div>
+
       <div class="campo">
         <label for="bebida">Bebida</label>
         <select id="bebida">
@@ -55,20 +66,21 @@
       </div>
 
       <div class="campo">
-        <label for="formato">Formato (litros por envase)</label>
-        <input
-          type="text"
-          id="formato"
-          inputmode="decimal"
-          autocomplete="off"
-          placeholder="Ej: 0.354 / 0.995 / 1.25"
-        />
-        <small>500 ml = 0.5 | 354 ml = 0.354 | 995 ml = 0.995 | 1,25 L = 1.25</small>
+        <label for="formato">Formato</label>
+        <select id="formato">
+          <option value="" selected disabled>Seleccionar formato</option>
+        </select>
+        <small>La lista cambia según la línea seleccionada.</small>
       </div>
 
       <div class="campo readonly">
         <label for="factor">Factor de rendimiento</label>
         <input type="text" id="factor" readonly />
+      </div>
+
+      <div class="campo readonly">
+        <label for="velocidad">Velocidad del formato</label>
+        <input type="text" id="velocidad" readonly />
       </div>
 
       <div class="acciones">

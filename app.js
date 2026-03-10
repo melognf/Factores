@@ -98,12 +98,48 @@ const bebidas = [
   { nombre: "AQ POMELO ZERO", factor: 6.398611467 }
 ];
 
+const formatosPorLinea = {
+  "LINEA 1": [
+    { nombre: "0.3 L", litros: 0.3, envasesHora: 25200 },
+    { nombre: "0.5 L", litros: 0.5, envasesHora: 25200 },
+    { nombre: "0.995 L", litros: 0.995, envasesHora: 18000 },
+    { nombre: "1 L", litros: 1, envasesHora: 18000 },
+    { nombre: "1.5 L", litros: 1.5, envasesHora: 12000 }
+  ],
+  "LINEA 2": [
+    { nombre: "0.220 L", litros: 0.220, envasesHora: 57000 },
+    { nombre: "0.354 L", litros: 0.354, envasesHora: 57000 },
+    { nombre: "0.473 L", litros: 0.473, envasesHora: 45000 }
+  ],
+  "LINEA 3": [
+    { nombre: "0.3 L", litros: 0.3, envasesHora: 16980 },
+    { nombre: "0.5 L", litros: 0.5, envasesHora: 19200 },
+    { nombre: "0.591 L", litros: 0.591, envasesHora: 19200 },
+    { nombre: "0.6 L", litros: 0.6, envasesHora: 19200 },
+    { nombre: "0.991 L", litros: 0.991, envasesHora: 13980 },
+    { nombre: "1.5 L", litros: 1.5, envasesHora: 10800 },
+    { nombre: "2.25 L", litros: 2.25, envasesHora: 9000 }
+  ],
+  "LINEA 5": [
+    { nombre: "1 L", litros: 1, envasesHora: 15000 }
+  ],
+  "LINEA 6": [
+    { nombre: "0.2 L", litros: 0.2, envasesHora: 24000 }
+  ],
+  "LINEA 7": [
+    { nombre: "1.5 L", litros: 1.5, envasesHora: 13800 },
+    { nombre: "2.25 L", litros: 2.25, envasesHora: 9000 }
+  ]
+};
+
 const $ = (id) => document.getElementById(id);
 
+const lineaSelect = $("linea");
 const bebidaSelect = $("bebida");
 const jarabeInput = $("jarabe");
-const formatoInput = $("formato");
+const formatoSelect = $("formato");
 const factorInput = $("factor");
+const velocidadInput = $("velocidad");
 const btnCalcular = $("btnCalcular");
 const btnLimpiar = $("btnLimpiar");
 const resultado = $("resultado");
@@ -129,11 +165,21 @@ function normalizarDecimal(texto) {
 
 function parseDecimalExacto(texto) {
   const limpio = normalizarDecimal(texto);
-
   if (limpio === "") return NaN;
   if (!/^\d*\.?\d+$/.test(limpio)) return NaN;
-
   return Number(limpio);
+}
+
+function formatearTiempoHorasMinutos(horasDecimal) {
+  if (!Number.isFinite(horasDecimal) || horasDecimal < 0) return "-";
+
+  const minutosTotales = Math.round(horasDecimal * 60);
+  const horas = Math.floor(minutosTotales / 60);
+  const minutos = minutosTotales % 60;
+
+  if (horas === 0) return `${minutos} min`;
+  if (minutos === 0) return `${horas} h`;
+  return `${horas} h ${minutos} min`;
 }
 
 function crearExplosionVisual(origenEl) {
@@ -166,45 +212,28 @@ function crearExplosionVisual(origenEl) {
   }
 }
 
-function limpiarCalculo() {
-  const tieneDatos =
-    bebidaSelect.value !== "" ||
-    jarabeInput.value !== "" ||
-    formatoInput.value !== "" ||
-    factorInput.value !== "" ||
-    resultado.textContent.trim() !== "Completá los datos para calcular.";
-
-  if (!tieneDatos) return;
-
-  resultado.classList.remove("fade-in");
-  resultado.classList.add("fade-out");
-
-  crearExplosionVisual(btnLimpiar);
-
-  setTimeout(() => {
-    bebidaSelect.value = "";
-    jarabeInput.value = "";
-    formatoInput.value = "";
-    factorInput.value = "";
-    resetResultadoVisual();
-
-    resultado.classList.remove("fade-out");
-    resultado.classList.add("fade-in");
-
-    setTimeout(() => {
-      resultado.classList.remove("fade-in");
-    }, 350);
-
-    bebidaSelect.focus();
-  }, 420);
-}
-
 function cargarBebidas() {
   bebidas.forEach((b, i) => {
     const option = document.createElement("option");
     option.value = i;
     option.textContent = b.nombre;
     bebidaSelect.appendChild(option);
+  });
+}
+
+function cargarFormatosSegunLinea() {
+  const linea = lineaSelect.value;
+
+  formatoSelect.innerHTML = `<option value="" selected disabled>Seleccionar formato</option>`;
+  velocidadInput.value = "";
+
+  if (!linea || !formatosPorLinea[linea]) return;
+
+  formatosPorLinea[linea].forEach((f, i) => {
+    const option = document.createElement("option");
+    option.value = i;
+    option.textContent = `${f.nombre} · ${formatearNumero(f.envasesHora, 0)} env/h`;
+    formatoSelect.appendChild(option);
   });
 }
 
@@ -218,37 +247,68 @@ function actualizarFactor() {
   factorInput.value = bebida ? bebida.factor.toFixed(6) : "";
 }
 
-function calcular() {
-  const idx = bebidaSelect.value;
+function actualizarVelocidad() {
+  const linea = lineaSelect.value;
+  const idx = formatoSelect.value;
 
-  if (idx === "") {
+  if (linea === "" || idx === "") {
+    velocidadInput.value = "";
+    return;
+  }
+
+  const formato = formatosPorLinea[linea][Number(idx)];
+  velocidadInput.value = formato
+    ? `${formatearNumero(formato.envasesHora, 0)} env/h`
+    : "";
+}
+
+function calcular() {
+  const linea = lineaSelect.value;
+  const bebidaIdx = bebidaSelect.value;
+  const formatoIdx = formatoSelect.value;
+
+  if (linea === "") {
+    resultado.innerHTML = `<div class="resultado-vacio">Seleccioná una línea.</div>`;
+    return;
+  }
+
+  if (bebidaIdx === "") {
     resultado.innerHTML = `<div class="resultado-vacio">Seleccioná una bebida.</div>`;
     return;
   }
 
-  const bebida = bebidas[Number(idx)];
+  if (formatoIdx === "") {
+    resultado.innerHTML = `<div class="resultado-vacio">Seleccioná un formato.</div>`;
+    return;
+  }
+
+  const bebida = bebidas[Number(bebidaIdx)];
+  const formato = formatosPorLinea[linea][Number(formatoIdx)];
 
   const jarabeTexto = jarabeInput.value;
-  const formatoTexto = formatoInput.value;
-
   const litrosJarabe = parseDecimalExacto(jarabeTexto);
-  const formatoLitros = parseDecimalExacto(formatoTexto);
 
   if (!Number.isFinite(litrosJarabe) || litrosJarabe <= 0) {
     resultado.innerHTML = `<div class="resultado-vacio">Ingresá una cantidad válida de litros de jarabe.</div>`;
     return;
   }
 
-  if (!Number.isFinite(formatoLitros) || formatoLitros <= 0) {
-    resultado.innerHTML = `<div class="resultado-vacio">Ingresá un formato válido en litros.</div>`;
+  if (!formato || !Number.isFinite(formato.litros) || formato.litros <= 0) {
+    resultado.innerHTML = `<div class="resultado-vacio">Formato inválido.</div>`;
+    return;
+  }
+
+  if (!Number.isFinite(formato.envasesHora) || formato.envasesHora <= 0) {
+    resultado.innerHTML = `<div class="resultado-vacio">Velocidad inválida para ese formato.</div>`;
     return;
   }
 
   const litrosBebida = litrosJarabe * bebida.factor;
-  const cantidadEnvases = litrosBebida / formatoLitros;
+  const cantidadEnvases = litrosBebida / formato.litros;
+  const horasFaltantes = cantidadEnvases / formato.envasesHora;
 
   const jarabeMostrado = normalizarDecimal(jarabeTexto).replace(".", ",");
-  const formatoMostrado = normalizarDecimal(formatoTexto).replace(".", ",");
+  const tiempoMostrado = formatearTiempoHorasMinutos(horasFaltantes);
 
   resultado.innerHTML = `
     <div class="bloque">
@@ -259,15 +319,66 @@ function calcular() {
 
       <div class="kpi">
         <div class="titulo">Cantidad teórica de envases</div>
-        <div class="valor">${formatearNumero(cantidadEnvases, 2)}</div>
+        <div class="valor">${formatearNumero(cantidadEnvases, 0)}</div>
+      </div>
+
+      <div class="kpi">
+        <div class="titulo">Velocidad del formato</div>
+        <div class="valor">${formatearNumero(formato.envasesHora, 0)} env/h</div>
+      </div>
+
+      <div class="kpi">
+        <div class="titulo">Tiempo estimado para terminar</div>
+        <div class="valor">${tiempoMostrado}</div>
       </div>
 
       <div class="detalle">
+        <strong>Línea:</strong> ${linea}<br>
+        <strong>Formato:</strong> ${formato.nombre}<br>
         <strong>Cálculo aplicado:</strong><br>
-        ${jarabeMostrado} × ${formatearNumero(bebida.factor, 6)} ÷ ${formatoMostrado}
+        ${jarabeMostrado} × ${formatearNumero(bebida.factor, 6)} = ${formatearNumero(litrosBebida, 2)} L<br>
+        ${formatearNumero(litrosBebida, 2)} ÷ ${formato.nombre.replace(".", ",").replace(" L", "")} = ${formatearNumero(cantidadEnvases, 0)} envases<br>
+        ${formatearNumero(cantidadEnvases, 0)} ÷ ${formatearNumero(formato.envasesHora, 0)} = ${tiempoMostrado}
       </div>
     </div>
   `;
+}
+
+function limpiarCalculo() {
+  const tieneDatos =
+    lineaSelect.value !== "" ||
+    bebidaSelect.value !== "" ||
+    jarabeInput.value !== "" ||
+    formatoSelect.value !== "" ||
+    factorInput.value !== "" ||
+    velocidadInput.value !== "" ||
+    resultado.textContent.trim() !== "Completá los datos para calcular.";
+
+  if (!tieneDatos) return;
+
+  resultado.classList.remove("fade-in");
+  resultado.classList.add("fade-out");
+
+  crearExplosionVisual(btnLimpiar);
+
+  setTimeout(() => {
+    lineaSelect.value = "";
+    bebidaSelect.value = "";
+    jarabeInput.value = "";
+    formatoSelect.innerHTML = `<option value="" selected disabled>Seleccionar formato</option>`;
+    factorInput.value = "";
+    velocidadInput.value = "";
+    resetResultadoVisual();
+
+    resultado.classList.remove("fade-out");
+    resultado.classList.add("fade-in");
+
+    setTimeout(() => {
+      resultado.classList.remove("fade-in");
+    }, 350);
+
+    lineaSelect.focus();
+  }, 420);
 }
 
 function iniciarAnimacionLiquida() {
@@ -309,7 +420,13 @@ function iniciarAnimacionLiquida() {
   });
 }
 
+lineaSelect.addEventListener("change", () => {
+  cargarFormatosSegunLinea();
+  resetResultadoVisual();
+});
+
 bebidaSelect.addEventListener("change", actualizarFactor);
+formatoSelect.addEventListener("change", actualizarVelocidad);
 btnCalcular.addEventListener("click", calcular);
 btnLimpiar.addEventListener("click", limpiarCalculo);
 
