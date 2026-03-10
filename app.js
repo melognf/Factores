@@ -140,6 +140,7 @@ const jarabeInput = $("jarabe");
 const formatoSelect = $("formato");
 const factorInput = $("factor");
 const velocidadInput = $("velocidad");
+const velocidadActualInput = $("velocidadActual");
 const btnCalcular = $("btnCalcular");
 const btnLimpiar = $("btnLimpiar");
 const resultado = $("resultado");
@@ -167,6 +168,12 @@ function parseDecimalExacto(texto) {
   const limpio = normalizarDecimal(texto);
   if (limpio === "") return NaN;
   if (!/^\d*\.?\d+$/.test(limpio)) return NaN;
+  return Number(limpio);
+}
+
+function parseEnteroPositivo(texto) {
+  const limpio = String(texto || "").replace(/\D/g, "");
+  if (limpio === "") return NaN;
   return Number(limpio);
 }
 
@@ -226,6 +233,7 @@ function cargarFormatosSegunLinea() {
 
   formatoSelect.innerHTML = `<option value="" selected disabled>Seleccionar formato</option>`;
   velocidadInput.value = "";
+  if (velocidadActualInput) velocidadActualInput.value = "";
 
   if (!linea || !formatosPorLinea[linea]) return;
 
@@ -299,16 +307,26 @@ function calcular() {
   }
 
   if (!Number.isFinite(formato.envasesHora) || formato.envasesHora <= 0) {
-    resultado.innerHTML = `<div class="resultado-vacio">Velocidad inválida para ese formato.</div>`;
+    resultado.innerHTML = `<div class="resultado-vacio">Velocidad nominal inválida para ese formato.</div>`;
     return;
   }
 
+  const velocidadActual = velocidadActualInput
+    ? parseEnteroPositivo(velocidadActualInput.value)
+    : NaN;
+
+  const velocidadUsada =
+    Number.isFinite(velocidadActual) && velocidadActual > 0
+      ? velocidadActual
+      : formato.envasesHora;
+
   const litrosBebida = litrosJarabe * bebida.factor;
   const cantidadEnvases = litrosBebida / formato.litros;
-  const horasFaltantes = cantidadEnvases / formato.envasesHora;
+  const horasFaltantes = cantidadEnvases / velocidadUsada;
 
   const jarabeMostrado = normalizarDecimal(jarabeTexto).replace(".", ",");
   const tiempoMostrado = formatearTiempoHorasMinutos(horasFaltantes);
+  const usaActual = Number.isFinite(velocidadActual) && velocidadActual > 0;
 
   resultado.innerHTML = `
     <div class="bloque">
@@ -323,8 +341,13 @@ function calcular() {
       </div>
 
       <div class="kpi">
-        <div class="titulo">Velocidad del formato</div>
+        <div class="titulo">Velocidad nominal</div>
         <div class="valor">${formatearNumero(formato.envasesHora, 0)} env/h</div>
+      </div>
+
+      <div class="kpi">
+        <div class="titulo">Velocidad usada en cálculo</div>
+        <div class="valor">${formatearNumero(velocidadUsada, 0)} env/h</div>
       </div>
 
       <div class="kpi">
@@ -335,10 +358,12 @@ function calcular() {
       <div class="detalle">
         <strong>Línea:</strong> ${linea}<br>
         <strong>Formato:</strong> ${formato.nombre}<br>
+        <strong>Jarabe cargado:</strong> ${jarabeMostrado} L<br>
+        <strong>Modo de velocidad:</strong> ${usaActual ? "Actual ingresada" : "Nominal del formato"}<br>
         <strong>Cálculo aplicado:</strong><br>
         ${jarabeMostrado} × ${formatearNumero(bebida.factor, 6)} = ${formatearNumero(litrosBebida, 2)} L<br>
         ${formatearNumero(litrosBebida, 2)} ÷ ${formato.nombre.replace(".", ",").replace(" L", "")} = ${formatearNumero(cantidadEnvases, 0)} envases<br>
-        ${formatearNumero(cantidadEnvases, 0)} ÷ ${formatearNumero(formato.envasesHora, 0)} = ${tiempoMostrado}
+        ${formatearNumero(cantidadEnvases, 0)} ÷ ${formatearNumero(velocidadUsada, 0)} = ${tiempoMostrado}
       </div>
     </div>
   `;
@@ -352,6 +377,7 @@ function limpiarCalculo() {
     formatoSelect.value !== "" ||
     factorInput.value !== "" ||
     velocidadInput.value !== "" ||
+    (velocidadActualInput && velocidadActualInput.value !== "") ||
     resultado.textContent.trim() !== "Completá los datos para calcular.";
 
   if (!tieneDatos) return;
@@ -368,6 +394,7 @@ function limpiarCalculo() {
     formatoSelect.innerHTML = `<option value="" selected disabled>Seleccionar formato</option>`;
     factorInput.value = "";
     velocidadInput.value = "";
+    if (velocidadActualInput) velocidadActualInput.value = "";
     resetResultadoVisual();
 
     resultado.classList.remove("fade-out");

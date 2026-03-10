@@ -83,6 +83,18 @@
         <input type="text" id="velocidad" readonly />
       </div>
 
+      <div class="campo">
+  <label for="velocidadActual">Velocidad actual (opcional)</label>
+  <input
+    type="text"
+    id="velocidadActual"
+    inputmode="numeric"
+    autocomplete="off"
+    placeholder="Ej: 48000"
+  />
+  <small>Si lo dejás vacío, se usa la velocidad nominal.</small>
+</div>
+
       <div class="acciones">
         <button id="btnCalcular" class="btn" type="button">Calcular</button>
         <button id="btnLimpiar" class="btn btn-secundario" type="button">Limpiar</button>
