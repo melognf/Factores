@@ -82,7 +82,7 @@ const bebidas = [
   { nombre: "SCHWEEPPES TONICA JMAF", factor: 6.993985173 },
   { nombre: "SCHWEEPPES TONICA JS", factor: 6.993985173 },
   { nombre: "SCHWEEPPES TONICA SIN AZUCAR", factor: 6.4 },
-  { nombre: "SMART WATER", factor: 11 },
+  { nombre: "SMART WATER", factor: 11.000105002 },
   { nombre: "SMART WATER CON GAS", factor: 7.000105002 },
   { nombre: "SPRITE ICE", factor: 6.4 },
   { nombre: "SPRITE SIN AZUCAR", factor: 6.4 },
