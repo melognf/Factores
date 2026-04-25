@@ -1,4 +1,4 @@
-const CACHE_NAME = "calculo-bebida-v3";
+const CACHE_NAME = "calculo-bebida-v4";
 
 const FILES_TO_CACHE = [
   "./",
@@ -14,6 +14,7 @@ self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(FILES_TO_CACHE))
   );
+  self.skipWaiting(); // 👈 el nuevo SW toma control sin esperar
 });
 
 self.addEventListener("activate", event => {
@@ -24,7 +25,7 @@ self.addEventListener("activate", event => {
           .filter(key => key !== CACHE_NAME)
           .map(key => caches.delete(key))
       )
-    )
+    ).then(() => self.clients.claim()) // 👈 toma control de todas las pestañas abiertas
   );
 });
 
