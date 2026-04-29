@@ -143,12 +143,37 @@ const velocidadInput = $("velocidad");
 const velocidadActualInput = $("velocidadActual");
 const btnCalcular = $("btnCalcular");
 const btnLimpiar = $("btnLimpiar");
-const resultado = $("resultado");
 const fxBurst = $("fxBurst");
+const modalOverlay = $("modalOverlay");
+const modalBody = $("modalBody");
+const modalCerrar = $("modalCerrar");
 
-function resetResultadoVisual() {
-  resultado.innerHTML = `<div class="resultado-vacio">Completá los datos para calcular.</div>`;
+function abrirModal(html) {
+  modalBody.innerHTML = html;
+  modalOverlay.classList.add("visible");
+  const sheet = modalOverlay.querySelector(".modal-sheet");
+  sheet.classList.remove("closing");
+  document.body.style.overflow = "hidden";
 }
+
+function cerrarModal() {
+  const sheet = modalOverlay.querySelector(".modal-sheet");
+  sheet.classList.add("closing");
+  setTimeout(() => {
+    modalOverlay.classList.remove("visible");
+    document.body.style.overflow = "";
+  }, 250);
+}
+
+modalCerrar.addEventListener("click", cerrarModal);
+modalOverlay.addEventListener("click", e => {
+  if (e.target === modalOverlay) cerrarModal();
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") cerrarModal();
+});
+
+function resetResultadoVisual() {}
 
 function formatearNumero(valor, decimales = 2) {
   return Number(valor).toLocaleString("es-AR", {
@@ -328,7 +353,7 @@ function calcular() {
   const tiempoMostrado = formatearTiempoHorasMinutos(horasFaltantes);
   const usaActual = Number.isFinite(velocidadActual) && velocidadActual > 0;
 
-  resultado.innerHTML = `
+  abrirModal(`
     <div class="bloque">
       <div class="kpi">
         <div class="titulo">Litros de bebida a envasar</div>
@@ -366,7 +391,7 @@ function calcular() {
         ${formatearNumero(cantidadEnvases, 0)} ÷ ${formatearNumero(velocidadUsada, 0)} = ${tiempoMostrado}
       </div>
     </div>
-  `;
+  `);
 }
 
 function limpiarCalculo() {
@@ -377,14 +402,11 @@ function limpiarCalculo() {
     formatoSelect.value !== "" ||
     factorInput.value !== "" ||
     velocidadInput.value !== "" ||
-    (velocidadActualInput && velocidadActualInput.value !== "") ||
-    resultado.textContent.trim() !== "Completá los datos para calcular.";
+    (velocidadActualInput && velocidadActualInput.value !== "");
 
   if (!tieneDatos) return;
 
-  resultado.classList.remove("fade-in");
-  resultado.classList.add("fade-out");
-
+  cerrarModal();
   crearExplosionVisual(btnLimpiar);
 
   setTimeout(() => {
@@ -395,51 +417,42 @@ function limpiarCalculo() {
     factorInput.value = "";
     velocidadInput.value = "";
     if (velocidadActualInput) velocidadActualInput.value = "";
-    resetResultadoVisual();
-
-    resultado.classList.remove("fade-out");
-    resultado.classList.add("fade-in");
-
-    setTimeout(() => {
-      resultado.classList.remove("fade-in");
-    }, 350);
-
     lineaSelect.focus();
-  }, 420);
+  }, 260);
 }
 
 function iniciarAnimacionLiquida() {
   if (typeof gsap === "undefined") return;
 
   gsap.to("#wave1", {
-    x: -80,
-    y: 8,
-    duration: 6,
+    x: -140,
+    y: 18,
+    duration: 5,
     repeat: -1,
     yoyo: true,
     ease: "sine.inOut"
   });
 
   gsap.to("#wave2", {
-    x: 60,
-    y: -6,
-    duration: 8,
+    x: 110,
+    y: -14,
+    duration: 7,
     repeat: -1,
     yoyo: true,
     ease: "sine.inOut"
   });
 
   gsap.to("#wave3", {
-    x: -40,
-    y: 10,
-    duration: 10,
+    x: -80,
+    y: 20,
+    duration: 9,
     repeat: -1,
     yoyo: true,
     ease: "sine.inOut"
   });
 
   gsap.to(".topbar-content", {
-    y: -3,
+    y: -4,
     duration: 4,
     repeat: -1,
     yoyo: true,

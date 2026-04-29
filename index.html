@@ -27,6 +27,10 @@
         </svg>
       </div>
 
+      <div class="logo-header">
+        <img src="logo-mg.jpg" alt="Monte Grande" />
+      </div>
+
       <div class="topbar-content">
         <h1>Cálculo de Bebida</h1>
         <p>Jarabe · Factor · Formato · Tiempo</p>
@@ -100,12 +104,20 @@
         <button id="btnLimpiar" class="btn btn-secundario" type="button">Limpiar</button>
       </div>
 
-      <section class="resultado" id="resultado">
-        <div class="resultado-vacio">Completá los datos para calcular.</div>
-      </section>
-
       <div id="fxBurst" class="fx-burst" aria-hidden="true"></div>
     </main>
+  </div>
+
+  <!-- MODAL RESULTADO -->
+  <div id="modalOverlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <span id="modalTitulo" class="modal-titulo">Resultado del cálculo</span>
+        <button id="modalCerrar" class="modal-cerrar" aria-label="Cerrar">✕</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
   </div>
 
   <script src="app.js"></script>

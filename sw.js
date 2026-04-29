@@ -1,4 +1,4 @@
-const CACHE_NAME = "calculo-bebida-v4";
+const CACHE_NAME = "calculo-bebida-v5";
 
 const FILES_TO_CACHE = [
   "./",
@@ -7,7 +7,8 @@ const FILES_TO_CACHE = [
   "./app.js",
   "./manifest.webmanifest",
   "./icon-192.png",
-  "./icon-512.png"
+  "./icon-512.png",
+  "./logo-mg.jpg"
 ];
 
 self.addEventListener("install", event => {
