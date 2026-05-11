@@ -266,41 +266,59 @@ body{
 
 .bloque{
   display:grid;
-  gap:12px;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
 }
 
 .kpi{
   background:#fff;
   border:1.5px solid #e8e8e8;
   border-left:4px solid var(--rojo);
-  border-radius:12px;
-  padding:14px 14px 14px 16px;
-  box-shadow:0 3px 12px rgba(0,0,0,.06);
+  border-radius:10px;
+  padding:10px 10px 10px 12px;
+  box-shadow:0 2px 8px rgba(0,0,0,.05);
+}
+
+.kpi.kpi-full{
+  grid-column:span 2;
+  border-left-color:#111;
+  background:#111;
+  color:#fff;
 }
 
 .kpi .titulo{
-  font-size:.88rem;
+  font-size:.75rem;
   color:var(--muted);
-  margin-bottom:5px;
+  margin-bottom:3px;
   text-transform:uppercase;
   letter-spacing:.04em;
   font-weight:600;
 }
 
+.kpi.kpi-full .titulo{
+  color:#9ca3af;
+}
+
 .kpi .valor{
-  font-size:1.45rem;
+  font-size:1.25rem;
   font-weight:900;
   line-height:1.1;
   color:#111;
 }
 
+.kpi.kpi-full .valor{
+  font-size:1.6rem;
+  color:#fff;
+}
+
 .detalle{
+  grid-column:span 2;
   background:#f8f9fa;
   border-radius:10px;
-  padding:12px 14px;
-  font-size:.93rem;
+  padding:9px 12px;
+  font-size:.82rem;
   color:#374151;
-  line-height:1.6;
+  line-height:1.5;
   border:1px solid #eee;
 }
 
@@ -362,9 +380,10 @@ body{
   inset:0;
   background:rgba(0,0,0,.55);
   z-index:1000;
-  align-items:flex-end;
+  align-items:center;
   justify-content:center;
   backdrop-filter:blur(2px);
+  padding:16px;
 }
 
 .modal-overlay.visible{
@@ -380,28 +399,28 @@ body{
 .modal-sheet{
   background:#fff;
   width:100%;
-  max-width:540px;
-  max-height:88dvh;
-  border-radius:22px 22px 0 0;
+  max-width:480px;
+  max-height:90dvh;
+  border-radius:20px;
   display:flex;
   flex-direction:column;
   overflow:hidden;
-  animation:sheetUp .32s cubic-bezier(.32,1.1,.64,1) forwards;
-  box-shadow:0 -8px 40px rgba(0,0,0,.25);
+  animation:sheetIn .28s cubic-bezier(.32,1.1,.64,1) forwards;
+  box-shadow:0 20px 60px rgba(0,0,0,.3);
 }
 
-@keyframes sheetUp{
-  from{transform:translateY(100%);}
-  to{transform:translateY(0);}
+@keyframes sheetIn{
+  from{opacity:0;transform:scale(.93);}
+  to{opacity:1;transform:scale(1);}
 }
 
 .modal-sheet.closing{
-  animation:sheetDown .25s ease forwards;
+  animation:sheetOut .2s ease forwards;
 }
 
-@keyframes sheetDown{
-  from{transform:translateY(0);}
-  to{transform:translateY(100%);}
+@keyframes sheetOut{
+  from{opacity:1;transform:scale(1);}
+  to{opacity:0;transform:scale(.93);}
 }
 
 .modal-handle{
@@ -454,7 +473,7 @@ body{
 
 .modal-body{
   overflow-y:auto;
-  padding:16px 18px 28px;
+  padding:12px 14px 20px;
   -webkit-overflow-scrolling:touch;
 }
 

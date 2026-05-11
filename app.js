@@ -375,7 +375,7 @@ function calcular() {
         <div class="valor">${formatearNumero(velocidadUsada, 0)} env/h</div>
       </div>
 
-      <div class="kpi">
+      <div class="kpi kpi-full">
         <div class="titulo">Tiempo estimado para terminar</div>
         <div class="valor">${tiempoMostrado}</div>
       </div>
