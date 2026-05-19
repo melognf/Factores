@@ -127,6 +127,11 @@
         navigator.serviceWorker.register("./sw.js")
           .catch(err => console.log("SW error:", err));
       });
+      navigator.serviceWorker.addEventListener("message", event => {
+        if (event.data && event.data.type === "SW_UPDATED") {
+          window.location.reload();
+        }
+      });
     }
   </script>
 </body>

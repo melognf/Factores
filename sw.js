@@ -26,7 +26,12 @@ self.addEventListener("activate", event => {
           .filter(key => key !== CACHE_NAME)
           .map(key => caches.delete(key))
       )
-    ).then(() => self.clients.claim()) // 👈 toma control de todas las pestañas abiertas
+    ).then(() => {
+      self.clients.claim();
+      self.clients.matchAll({ type: "window" }).then(clients => {
+        clients.forEach(client => client.postMessage({ type: "SW_UPDATED" }));
+      });
+    })
   );
 });
 
