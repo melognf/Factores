@@ -87,8 +87,8 @@ const formatosPorLinea = {
   "LINEA 3": [
     { nombre: "0.3 L", litros: 0.3, envasesHora: 16980 },
     { nombre: "0.5 L", litros: 0.5, envasesHora: 19200 },
-    { nombre: "0.591 L", litros: 0.591, envasesHora: 19200 },
-    { nombre: "0.6 L", litros: 0.6, envasesHora: 19200 },
+    { nombre: "0.591 L", litros: 0.591, envasesHora: 18600 },
+    { nombre: "0.6 L", litros: 0.6, envasesHora: 18600 },
     { nombre: "0.991 L", litros: 0.991, envasesHora: 13980 },
     { nombre: "1.5 L", litros: 1.5, envasesHora: 10800 },
     { nombre: "2.25 L", litros: 2.25, envasesHora: 9000 }
