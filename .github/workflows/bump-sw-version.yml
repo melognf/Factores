@@ -9,6 +9,9 @@ on:
       - 'index.html'
       - 'manifest.webmanifest'
 
+permissions:
+  contents: write
+
 jobs:
   bump-version:
     runs-on: ubuntu-latest
