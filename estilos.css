@@ -322,6 +322,32 @@ body{
   border:1px solid #eee;
 }
 
+.progreso-barra{
+  width:100%;
+  height:10px;
+  border-radius:999px;
+  background:#333;
+  overflow:hidden;
+  margin:4px 0 6px;
+}
+
+.progreso-relleno{
+  height:100%;
+  border-radius:999px;
+  background:var(--rojo);
+  transition:width .3s ease;
+}
+
+.progreso-relleno.progreso-excedido{
+  background:#22c55e;
+}
+
+.progreso-texto{
+  font-size:.8rem;
+  font-weight:600;
+  color:#d1d5db;
+}
+
 /* ===== ANIMACIONES ===== */
 .fade-out{
   animation:fadeOutCard .45s ease forwards;

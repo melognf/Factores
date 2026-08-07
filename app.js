@@ -73,35 +73,35 @@ const bebidas = [
 
 const formatosPorLinea = {
   "LINEA 1": [
-    { nombre: "0.3 L", litros: 0.3, envasesHora: 25200 },
-    { nombre: "0.5 L", litros: 0.5, envasesHora: 25200 },
-    { nombre: "0.995 L", litros: 0.995, envasesHora: 18000 },
-    { nombre: "1 L", litros: 1, envasesHora: 18000 },
-    { nombre: "1.5 L", litros: 1.5, envasesHora: 12000 }
+    { nombre: "0.3 L", litros: 0.3, envasesHora: 25200, botellasPorCaja: 6 },
+    { nombre: "0.5 L", litros: 0.5, envasesHora: 25200, botellasPorCaja: 6 },
+    { nombre: "0.995 L", litros: 0.995, envasesHora: 18000, botellasPorCaja: 6 },
+    { nombre: "1 L", litros: 1, envasesHora: 18000, botellasPorCaja: 6 },
+    { nombre: "1.5 L", litros: 1.5, envasesHora: 12000, botellasPorCaja: 4 }
   ],
   "LINEA 2": [
-    { nombre: "0.220 L", litros: 0.220, envasesHora: 57000 },
-    { nombre: "0.354 L", litros: 0.354, envasesHora: 57000 },
-    { nombre: "0.473 L", litros: 0.473, envasesHora: 45000 }
+    { nombre: "0.220 L", litros: 0.220, envasesHora: 57000, botellasPorCaja: 6 },
+    { nombre: "0.354 L", litros: 0.354, envasesHora: 57000, botellasPorCaja: 6 },
+    { nombre: "0.473 L", litros: 0.473, envasesHora: 45000, botellasPorCaja: 6 }
   ],
   "LINEA 3": [
-    { nombre: "0.3 L", litros: 0.3, envasesHora: 16980 },
-    { nombre: "0.5 L", litros: 0.5, envasesHora: 19200 },
-    { nombre: "0.591 L", litros: 0.591, envasesHora: 18600 },
-    { nombre: "0.6 L", litros: 0.6, envasesHora: 18600 },
-    { nombre: "0.991 L", litros: 0.991, envasesHora: 13980 },
-    { nombre: "1.5 L", litros: 1.5, envasesHora: 10800 },
-    { nombre: "2.25 L", litros: 2.25, envasesHora: 9000 }
+    { nombre: "0.3 L", litros: 0.3, envasesHora: 16980, botellasPorCaja: 6 },
+    { nombre: "0.5 L", litros: 0.5, envasesHora: 19200, botellasPorCaja: 6 },
+    { nombre: "0.591 L", litros: 0.591, envasesHora: 18600, botellasPorCaja: 6 },
+    { nombre: "0.6 L", litros: 0.6, envasesHora: 18600, botellasPorCaja: 6 },
+    { nombre: "0.991 L", litros: 0.991, envasesHora: 13980, botellasPorCaja: 6 },
+    { nombre: "1.5 L", litros: 1.5, envasesHora: 10800, botellasPorCaja: 6 },
+    { nombre: "2.25 L", litros: 2.25, envasesHora: 9000, botellasPorCaja: 6 }
   ],
   "LINEA 5": [
-    { nombre: "1 L", litros: 1, envasesHora: 15000 }
+    { nombre: "1 L", litros: 1, envasesHora: 15000, botellasPorCaja: 8 }
   ],
   "LINEA 6": [
-    { nombre: "0.2 L", litros: 0.2, envasesHora: 24000 }
+    { nombre: "0.2 L", litros: 0.2, envasesHora: 24000, botellasPorCaja: 24 }
   ],
   "LINEA 7": [
-    { nombre: "1.5 L", litros: 1.5, envasesHora: 13800 },
-    { nombre: "2.25 L", litros: 2.25, envasesHora: 9000 }
+    { nombre: "1.5 L", litros: 1.5, envasesHora: 13800, botellasPorCaja: 6 },
+    { nombre: "2.25 L", litros: 2.25, envasesHora: 9000, botellasPorCaja: 6 }
   ]
 };
 
@@ -114,14 +114,17 @@ const formatoSelect = $("formato");
 const factorInput = $("factor");
 const velocidadInput = $("velocidad");
 const velocidadActualInput = $("velocidadActual");
+const cajasPlaneadasInput = $("cajasPlaneadas");
 const btnCalcular = $("btnCalcular");
 const btnLimpiar = $("btnLimpiar");
 const fxBurst = $("fxBurst");
 const modalOverlay = $("modalOverlay");
+const modalTitulo = $("modalTitulo");
 const modalBody = $("modalBody");
 const modalCerrar = $("modalCerrar");
 
-function abrirModal(html) {
+function abrirModal(titulo, html) {
+  modalTitulo.textContent = titulo;
   modalBody.innerHTML = html;
   modalOverlay.classList.add("visible");
   const sheet = modalOverlay.querySelector(".modal-sheet");
@@ -321,12 +324,22 @@ function calcular() {
   const litrosBebida = litrosJarabe * bebida.factor;
   const cantidadEnvases = litrosBebida / formato.litros;
   const horasFaltantes = cantidadEnvases / velocidadUsada;
+  const cajasQueFaltan = cantidadEnvases / formato.botellasPorCaja;
+
+  const cajasPlaneadas = cajasPlaneadasInput
+    ? parseEnteroPositivo(cajasPlaneadasInput.value)
+    : NaN;
+  const hayCajasPlaneadas = Number.isFinite(cajasPlaneadas) && cajasPlaneadas > 0;
+  const porcentajeAvance = hayCajasPlaneadas
+    ? (cajasQueFaltan / cajasPlaneadas) * 100
+    : 0;
+  const anchoBarra = Math.min(porcentajeAvance, 100);
 
   const jarabeMostrado = normalizarDecimal(jarabeTexto).replace(".", ",");
   const tiempoMostrado = formatearTiempoHorasMinutos(horasFaltantes);
   const usaActual = Number.isFinite(velocidadActual) && velocidadActual > 0;
 
-  abrirModal(`
+  abrirModal(`${bebida.nombre} · ${formato.nombre}`, `
     <div class="bloque">
       <div class="kpi">
         <div class="titulo">Litros de bebida a envasar</div>
@@ -344,9 +357,19 @@ function calcular() {
       </div>
 
       <div class="kpi">
-        <div class="titulo">Velocidad usada en cálculo</div>
-        <div class="valor">${formatearNumero(velocidadUsada, 0)} env/h</div>
+        <div class="titulo">Cajas que faltan</div>
+        <div class="valor">${formatearNumero(Math.ceil(cajasQueFaltan), 0)}</div>
       </div>
+
+      ${hayCajasPlaneadas ? `
+      <div class="kpi kpi-full progreso-kpi">
+        <div class="titulo">Cajas que faltan vs. planeadas</div>
+        <div class="progreso-barra">
+          <div class="progreso-relleno${porcentajeAvance > 100 ? " progreso-excedido" : ""}" style="width:${anchoBarra}%"></div>
+        </div>
+        <div class="progreso-texto">${formatearNumero(Math.ceil(cajasQueFaltan), 0)} de ${formatearNumero(cajasPlaneadas, 0)} cajas planeadas · ${formatearNumero(porcentajeAvance, 0)}%</div>
+      </div>
+      ` : ""}
 
       <div class="kpi kpi-full">
         <div class="titulo">Tiempo estimado para terminar</div>
@@ -361,6 +384,7 @@ function calcular() {
         <strong>Cálculo aplicado:</strong><br>
         ${jarabeMostrado} × ${formatearNumero(bebida.factor, 6)} = ${formatearNumero(litrosBebida, 2)} L<br>
         ${formatearNumero(litrosBebida, 2)} ÷ ${formato.nombre.replace(".", ",").replace(" L", "")} = ${formatearNumero(cantidadEnvases, 0)} envases<br>
+        ${formatearNumero(cantidadEnvases, 0)} ÷ ${formato.botellasPorCaja} = ${formatearNumero(Math.ceil(cajasQueFaltan), 0)} cajas<br>
         ${formatearNumero(cantidadEnvases, 0)} ÷ ${formatearNumero(velocidadUsada, 0)} = ${tiempoMostrado}
       </div>
     </div>
@@ -375,7 +399,8 @@ function limpiarCalculo() {
     formatoSelect.value !== "" ||
     factorInput.value !== "" ||
     velocidadInput.value !== "" ||
-    (velocidadActualInput && velocidadActualInput.value !== "");
+    (velocidadActualInput && velocidadActualInput.value !== "") ||
+    (cajasPlaneadasInput && cajasPlaneadasInput.value !== "");
 
   if (!tieneDatos) return;
 
@@ -390,6 +415,7 @@ function limpiarCalculo() {
     factorInput.value = "";
     velocidadInput.value = "";
     if (velocidadActualInput) velocidadActualInput.value = "";
+    if (cajasPlaneadasInput) cajasPlaneadasInput.value = "";
     lineaSelect.focus();
   }, 260);
 }
