@@ -100,6 +100,18 @@
 </div>
 
       <div class="campo">
+  <label for="envasesProducidos">Envases producidos de esta carga (opcional)</label>
+  <input
+    type="text"
+    id="envasesProducidos"
+    inputmode="numeric"
+    autocomplete="off"
+    placeholder="Ej: 5000"
+  />
+  <small>Cuántos envases de esta carga ya salieron, para medir su avance real.</small>
+</div>
+
+      <div class="campo">
   <label for="cajasPlaneadas">Cajas planeadas (opcional)</label>
   <input
     type="text"
@@ -108,7 +120,7 @@
     autocomplete="off"
     placeholder="Ej: 2000"
   />
-  <small>Para comparar contra las cajas que faltan para cortar.</small>
+  <small>Es el total del sabor, fijo. Marca el borde rojo de la barra.</small>
 </div>
 
       <div class="acciones">
@@ -135,15 +147,33 @@
   <script src="app.js"></script>
   <script>
     if ("serviceWorker" in navigator) {
+      let swRegistro = null;
+
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js")
+        navigator.serviceWorker
+          .register("./sw.js", { updateViaCache: "none" })
+          .then(reg => {
+            swRegistro = reg;
+            reg.update();
+          })
           .catch(err => console.log("SW error:", err));
       });
+
       navigator.serviceWorker.addEventListener("message", event => {
         if (event.data && event.data.type === "SW_UPDATED") {
           window.location.reload();
         }
       });
+
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible" && swRegistro) {
+          swRegistro.update();
+        }
+      });
+
+      setInterval(() => {
+        if (swRegistro) swRegistro.update();
+      }, 5 * 60 * 1000);
     }
   </script>
 </body>

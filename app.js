@@ -114,6 +114,7 @@ const formatoSelect = $("formato");
 const factorInput = $("factor");
 const velocidadInput = $("velocidad");
 const velocidadActualInput = $("velocidadActual");
+const envasesProducidosInput = $("envasesProducidos");
 const cajasPlaneadasInput = $("cajasPlaneadas");
 const btnCalcular = $("btnCalcular");
 const btnLimpiar = $("btnLimpiar");
@@ -326,14 +327,31 @@ function calcular() {
   const horasFaltantes = cantidadEnvases / velocidadUsada;
   const cajasQueFaltan = cantidadEnvases / formato.botellasPorCaja;
 
+  const envasesProducidos = envasesProducidosInput
+    ? parseEnteroPositivo(envasesProducidosInput.value)
+    : NaN;
+  const envasesProducidosValidos =
+    Number.isFinite(envasesProducidos) && envasesProducidos > 0
+      ? envasesProducidos
+      : 0;
+  const cajasProducidasCarga = envasesProducidosValidos / formato.botellasPorCaja;
+
   const cajasPlaneadas = cajasPlaneadasInput
     ? parseEnteroPositivo(cajasPlaneadasInput.value)
     : NaN;
   const hayCajasPlaneadas = Number.isFinite(cajasPlaneadas) && cajasPlaneadas > 0;
-  const porcentajeAvance = hayCajasPlaneadas
-    ? (cajasQueFaltan / cajasPlaneadas) * 100
+
+  const totalCarga = cajasQueFaltan + cajasProducidasCarga;
+  const porcentajeAvance =
+    totalCarga > 0
+      ? Math.min((cajasProducidasCarga / totalCarga) * 100, 100)
+      : 0;
+  const posicionCarga = hayCajasPlaneadas
+    ? Math.min((totalCarga / cajasPlaneadas) * 100, 100)
     : 0;
-  const anchoBarra = Math.min(porcentajeAvance, 100);
+  const anchoBarra = hayCajasPlaneadas
+    ? Math.min((cajasProducidasCarga / cajasPlaneadas) * 100, posicionCarga)
+    : 0;
 
   const jarabeMostrado = normalizarDecimal(jarabeTexto).replace(".", ",");
   const tiempoMostrado = formatearTiempoHorasMinutos(horasFaltantes);
@@ -363,11 +381,12 @@ function calcular() {
 
       ${hayCajasPlaneadas ? `
       <div class="kpi kpi-full progreso-kpi">
-        <div class="titulo">Cajas que faltan vs. planeadas</div>
+        <div class="titulo">Avance de esta carga · Plan ${formatearNumero(cajasPlaneadas, 0)} cajas</div>
         <div class="progreso-barra">
-          <div class="progreso-relleno${porcentajeAvance > 100 ? " progreso-excedido" : ""}" style="width:${anchoBarra}%"></div>
+          <div class="progreso-relleno" style="width:${anchoBarra}%"></div>
+          <div class="progreso-marca" style="left:${posicionCarga}%"></div>
         </div>
-        <div class="progreso-texto">${formatearNumero(Math.ceil(cajasQueFaltan), 0)} de ${formatearNumero(cajasPlaneadas, 0)} cajas planeadas · ${formatearNumero(porcentajeAvance, 0)}%</div>
+        <div class="progreso-texto">${formatearNumero(Math.floor(cajasProducidasCarga), 0)} de ${formatearNumero(Math.ceil(totalCarga), 0)} cajas de esta carga · ${formatearNumero(porcentajeAvance, 0)}%</div>
       </div>
       ` : ""}
 
@@ -400,6 +419,7 @@ function limpiarCalculo() {
     factorInput.value !== "" ||
     velocidadInput.value !== "" ||
     (velocidadActualInput && velocidadActualInput.value !== "") ||
+    (envasesProducidosInput && envasesProducidosInput.value !== "") ||
     (cajasPlaneadasInput && cajasPlaneadasInput.value !== "");
 
   if (!tieneDatos) return;
@@ -415,6 +435,7 @@ function limpiarCalculo() {
     factorInput.value = "";
     velocidadInput.value = "";
     if (velocidadActualInput) velocidadActualInput.value = "";
+    if (envasesProducidosInput) envasesProducidosInput.value = "";
     if (cajasPlaneadasInput) cajasPlaneadasInput.value = "";
     lineaSelect.focus();
   }, 260);
