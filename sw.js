@@ -1,4 +1,4 @@
-const CACHE_NAME = "calculo-bebida-1786136548";
+const CACHE_NAME = "calculo-bebida-1786232067";
 
 const FILES_TO_CACHE = [
   "./",
