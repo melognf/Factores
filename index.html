@@ -154,7 +154,7 @@
           .register("./sw.js", { updateViaCache: "none" })
           .then(reg => {
             swRegistro = reg;
-            reg.update();
+            reg.update().catch(() => {});
           })
           .catch(err => console.log("SW error:", err));
       });
@@ -167,12 +167,12 @@
 
       document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "visible" && swRegistro) {
-          swRegistro.update();
+          swRegistro.update().catch(() => {});
         }
       });
 
       setInterval(() => {
-        if (swRegistro) swRegistro.update();
+        if (swRegistro) swRegistro.update().catch(() => {});
       }, 5 * 60 * 1000);
     }
   </script>
