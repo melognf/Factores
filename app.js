@@ -9,7 +9,6 @@ const bebidas = [
   { nombre: "AQUARIUS MANZANA ZERO", factor: 4.399956 },
   { nombre: "AQUARIUS POMELO ZERO", factor: 4.399220611 },
   { nombre: "AQ POMELO ZERO", factor: 6.398611467 },
-  { nombre: "CARIOCA MANZANA", factor: 2.999794573 },
   { nombre: "CEPITA 100% MANZANA", factor: 2.998503359 },
   { nombre: "CEPITA DURAZNO 20%", factor: 2.998792511 },
   { nombre: "CEPITA FRESH NARANJA", factor: 4.999263008 },
@@ -103,6 +102,22 @@ const formatosPorLinea = {
     { nombre: "1.5 L", litros: 1.5, envasesHora: 13800, botellasPorCaja: 6 },
     { nombre: "2.25 L", litros: 2.25, envasesHora: 9000, botellasPorCaja: 6 }
   ]
+};
+
+// Sabores que trabajan en cada línea. Si una línea no figura acá, muestra todos los sabores.
+const esAquarius = (b) => /^(AQUARIUS|AQ )/.test(b.nombre);
+const esCepita = (b) => /^CEP/.test(b.nombre);
+const esPowerade = (b) => /^POWERADE/.test(b.nombre);
+const esSmartWater = (b) => /^SMART WATER/.test(b.nombre);
+const esHiC = (b) => /^HI-C/.test(b.nombre);
+
+const bebidasPorLinea = {
+  "LINEA 1": (b) => esPowerade(b) || esCepita(b),
+  "LINEA 2": (b) => !(esAquarius(b) || esPowerade(b) || esCepita(b) || esHiC(b)),
+  "LINEA 3": (b) => esAquarius(b) || esSmartWater(b),
+  "LINEA 5": esCepita,
+  "LINEA 6": esCepita,
+  "LINEA 7": (b) => esAquarius(b) || esHiC(b)
 };
 
 const $ = (id) => document.getElementById(id);
@@ -222,12 +237,23 @@ function crearExplosionVisual(origenEl) {
 }
 
 function cargarBebidas() {
+  const filtro = bebidasPorLinea[lineaSelect.value];
+  const seleccionada = bebidaSelect.value;
+
+  bebidaSelect.innerHTML = `<option value="" selected disabled>Seleccionar bebida</option>`;
+
   bebidas.forEach((b, i) => {
+    if (filtro && !filtro(b)) return;
     const option = document.createElement("option");
     option.value = i;
     option.textContent = b.nombre;
     bebidaSelect.appendChild(option);
   });
+
+  if (seleccionada !== "" && bebidaSelect.querySelector(`option[value="${seleccionada}"]`)) {
+    bebidaSelect.value = seleccionada;
+  }
+  actualizarFactor();
 }
 
 function cargarFormatosSegunLinea() {
@@ -355,6 +381,17 @@ function calcular() {
 
   const jarabeMostrado = normalizarDecimal(jarabeTexto).replace(".", ",");
   const tiempoMostrado = formatearTiempoHorasMinutos(horasFaltantes);
+  const finEstimado = new Date(Date.now() + horasFaltantes * 3600 * 1000);
+  const fechaFin = finEstimado
+    .toLocaleDateString("es-AR", { weekday: "long", day: "2-digit", month: "2-digit" })
+    .replace(",", "")
+    .replace("-", "/");
+  const horaFin = finEstimado.toLocaleTimeString("es-AR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  });
+  const finMostrado = `${fechaFin.charAt(0).toUpperCase()}${fechaFin.slice(1)} · ${horaFin} hs`;
   const usaActual = Number.isFinite(velocidadActual) && velocidadActual > 0;
 
   abrirModal(`${bebida.nombre} · ${formato.nombre}`, `
@@ -391,8 +428,8 @@ function calcular() {
       ` : ""}
 
       <div class="kpi kpi-full">
-        <div class="titulo">Tiempo estimado para terminar</div>
-        <div class="valor">${tiempoMostrado}</div>
+        <div class="titulo">Según jarabe tenemos hasta:</div>
+        <div class="valor">${finMostrado}</div>
       </div>
 
       <div class="detalle">
@@ -430,6 +467,7 @@ function limpiarCalculo() {
   setTimeout(() => {
     lineaSelect.value = "";
     bebidaSelect.value = "";
+    cargarBebidas();
     jarabeInput.value = "";
     formatoSelect.innerHTML = `<option value="" selected disabled>Seleccionar formato</option>`;
     factorInput.value = "";
@@ -481,6 +519,7 @@ function iniciarAnimacionLiquida() {
 }
 
 lineaSelect.addEventListener("change", () => {
+  cargarBebidas();
   cargarFormatosSegunLinea();
   resetResultadoVisual();
 });
